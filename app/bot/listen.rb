@@ -1,5 +1,6 @@
 require "facebook/messenger"
 include Facebook::Messenger
+require_relative "setup"
 require_relative "workflow"
 include Workflow
 
@@ -14,6 +15,7 @@ require 'byebug'
 
 # Format: { `facebook_id`: { actions: [`action_1`, `action_2`, ...], saved: `value` } }, with menu actions first and other actions after
 
+# Action collection
 ACTIONS = {
   menu_reason: 'EXPLAIN',
   menu_act: 'ACTION',
@@ -30,6 +32,9 @@ ACTIONS = {
   submit_yes: 'SUBMIT',
   submit_no: 'RETRY'
 }
+
+# Sets up menu and intro sequence
+SetUp.enable
 
 Bot.on :message do |message|
   user_id = message.sender
