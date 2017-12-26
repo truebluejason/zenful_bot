@@ -14,6 +14,8 @@ require 'byebug'
 
 
 # Format: { `facebook_id`: { actions: [`action_1`, `action_2`, ...], saved: `value` } }, with menu actions first and other actions after
+# Storage for Temporarily Saving Incomplete Entries: { `facebook_id`: { date: `12/25/2017`, mood: `content`, text: `` } }
+temp_storage = {}
 
 # Action collection
 ACTIONS = {
@@ -32,59 +34,110 @@ ACTIONS = {
   submit_yes: 'SUBMIT',
   submit_no: 'RETRY'
 }
+MENU_ACTS = "#{ACTIONS[:menu_reason]},#{ACTIONS[:menu_act]},#{ACTIONS[:menu_show_specific]},#{ACTIONS[:menu_show_all]}"
 
-# Sets up menu and intro sequence
+# Sets up menu and get started button
 SetUp.enable
 
+# Handles messages
 Bot.on :message do |message|
-  user_id = message.sender
-
-  users = MemberDB.all
-  if users.key? user_id
-    curr_action = users[:user_id][:actions].last
+  user_id = message.sender['id']
+  db_user = User.find_by_facebook_id user_id
+  if db_user
+    permitted = db_user.actions
+    # Only one action other than menu is allowed for messages
+    curr_action = permitted.split(",").last
     case curr_action
     when ACTIONS[:date]
-      # Direct to date handling method
-      # Update user's permitted actions
+      Workflow.date_message message, db_user
+      db_user.actions = MENU_ACTS
+      db_user.save
     when ACTIONS[:log]
-      # Direct to log handling method
-      # Update user's permitted actions
+      Workflow.handle_log message
+      temp_storage[user_id][:text] = message.text
+      db_user.actions = MENU_ACTS
+      db_user.save
     else
-      # Direct to I don't understand method
+      Workflow.redirect_message message
+      db_user.actions = MENU_ACTS
+      db_user.save
     end
-    # Save to member table
   else
-    # Direct to I don't understand method
+    Workflow.redirect_message message
+    db_user.actions = MENU_ACTS
+    db_user.save
   end
 end
 
+# Handles postbacks
 Bot.on :postback do |postback|
-  user_id = postback.sender
-
-  users = MemberDB.all
-  if users.key? user_id
-    if users[:user_id][:action].include? postback.payload
+  user_id = postback.sender['id']
+  db_user = User.find_by_facebook_id user_id
+  if db_user
+    permitted_array = db_user.actions.split(",")
+    if permitted_array.include? postback.payload
       case postback.payload
       when ACTIONS[:menu_reason]
-        # Direct to menu_reason handling method
-        # Update user's permitted actions
+        Workflow.explain_benefits postback
+        db_user.actions = MENU_ACTS
+        db_user.save
       when ACTIONS[:menu_act]
-        # Direct to menu_act handling method
-        # Update user's permitted actions
+        Workflow.begin_routine postback
+        db_user.actions = MENU_ACTS + ",#{ACTIONS[:begin_routine]}"
+        db_user.save
       when ACTIONS[:menu_show_specific]
-        # Direct to menu_show_specific handling method
-        # Update user's permitted actions
+        Workflow.ask_for_formatted_date postback, db_user
+        db_user.actions = MENU_ACTS + ",#{ACTIONS[:date]}"
+        db_user.save
       when ACTIONS[:menu_show_all]
-        # Direct to menu_show_all handling method
-        # Update user's permitted actions
+        Workflow.show_all_logs postback
+        db_user.actions = MENU_ACTS
+        db_user.save
+      when ACTIONS[:learn_more]
+        Workflow.learn_more postback
+        db_user.actions = MENU_ACTS + ",#{ACTIONS[:begin_routine]}"
+        db_user.save
+      when ACTIONS[:begin_routine]
+        Workflow.begin_routine user_id
+        # Initialize the temporary storage entry for user_id
+        temp_storage[user_id] = { date: "not initialized", mood: "not initialized", text: "not initialized" }
+        db_user.actions = MENU_ACTS + ",#{ACTIONS[:mood_good]},#{ACTIONS[:mood_okay]},#{ACTIONS[:mood_bad]}"
+        db_user.save
+      when ACTIONS[:mood_good]
+        Workflow.handle_mood postback
+        temp_storage[user_id][:mood] = "Content"
+        db_user.actions = MENU_ACTS + ",#{ACTIONS[:log]}"
+        db_user.save
+      when ACTIONS[:mood_okay]
+        Workflow.handle_mood postback
+        temp_storage[user_id][:mood] = "Okay"
+        db_user.actions = MENU_ACTS + ",#{ACTIONS[:log]}"
+        db_user.save
+      when ACTIONS[:mood_bad]
+        Workflow.handle_mood postback
+        temp_storage[user_id][:mood] = "Discontent"
+        db_user.actions = MENU_ACTS + ",#{ACTIONS[:log]}"
+        db_user.save
+      when ACTIONS[:submit_yes]
+        Workflow.confirm_submit postback
+        # Save the temporary entry to the database
+        db_user.entries.create(date: Date.today.to_s, mood: temp_storage[user_id][:mood], text: temp_storage[user_id][:text])
+        db_user.actions = MENU_ACTS
+        db_user.save
+      when ACTIONS[:submit_no]
+        Workflow.unconfirm_submit postback
+        db_user.actions = MENU_ACTS + ",#{ACTIONS[:log]}"
+        db_user.save
       end
-      # Save to member table
     else
-      # Direct to I don't understand method
+      Workflow.redirect_message postback
+      db_user.actions = MENU_ACTS
+      db_user.save
     end
   else
     if postback.payload == ACTIONS[:start]
-      # Generate a table with ActiveRecord with log_id, date, feeling, and user_log
+      Workflow.introduction postback
+      new_user = User.create(facebook_id: user_id, actions: MENU_ACTS + ",#{ACTIONS[:learn_more]}")
     end
   end
 end

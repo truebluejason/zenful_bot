@@ -7,4 +7,163 @@ require 'byebug'
 
 module Workflow
 
+##############################################################################################
+# MISC Methods
+##############################################################################################
+
+  # When user does something that is not allowed, redirect them to interact with the menu only
+	def redirect_message pb
+    text_reply(pb, "Something is off. Please interact with the menu again.")
+	end
+
+  # Tells the user to type the date message again
+  def invalid_date msg
+    text_reply(msg, "The date you entered isn't properly formatted.
+     Please try again or interact with the menu.")
+  end
+
+##############################################################################################
+# Menu Related Methods
+##############################################################################################
+
+  # Sends the user scientific benefits of doing gratitude exercises
+  def explain_benefits pb
+    text_reply(pb, "Studies have shown that cultivating thankfulness
+     on a daily basis can improve people's quality of life.")
+    text_reply(pb, "Here are some links to different articles and papers, so you
+     can see the results and assess the benefits for yourself.")
+    text_reply(pb, 'https://www.health.harvard.edu/newsletter_article/in-praise-of-gratitude')
+    text_reply(pb, 'https://www.ncbi.nlm.nih.gov/pubmed/12585811')
+    text_reply(pb, 'https://www.ncbi.nlm.nih.gov/pubmed/20515249')
+  end
+
+  # Ask for formatted date to display logs from a date correctly
+  def ask_for_formatted_date pb
+    text_reply(pb, "Please type the date of interest.")
+  end
+
+  # Checks if NLP is available, then take the appropriate action
+  def date_message msg, db_user
+    begin
+      nlp = msg.messaging["message"]["nlp"]["entities"]["datetime"][0]["value"]
+      date = Date.parse(nlp).to_s
+      show_logs_from_date msg, date, db_user
+    rescue
+      invalid_date msg
+    end
+  end
+
+  # Fetches database rows with the specified date and sends a message for each log
+  def show_logs_from_date msg, date, db_user
+    id = msg.sender['id']
+    # You obtain entries through the database's user id, not facebook's user id
+    past_user_entries = Entry.where(user_id: db_user.id, date: date)
+    if past_user_entries.empty?
+      text_reply(msg, "You don't have any entries on that date.
+       However, you have entries on the following dates:")
+      Entry.where(user_id: db_user.id).each do |entry|
+        text_reply(msg, "entry.date")
+      end
+      text_reply(msg, "Feel free to search for another date or interact with the menu.")
+    else
+      past_user_entries.each do |entry|
+        text_reply(pb, "Date: #{entry.date} – You felt: #{entry.mood}")
+        text_reply(pb, "You said: \"#{entry.text}\"")
+      end
+      text_reply(msg, "That's it! Feel free to interact with the menu more.")
+    end
+  end
+
+  # Fetches the user's past responses from the database and sends a message for each log
+  def show_all_logs pb, db_user
+    # You obtain entries through the database's user id, not facebook's user id
+    past_user_entries = Entry.where(user_id: db_user.id)
+    if past_user_entries.empty?
+      text_reply(pb, "You don't have any entries!
+       Create one by clicking 'I'll tell you about today now.' button from the menu.")
+    else
+      past_user_entries.each do |entry|
+        text_reply(pb, "Date: #{entry.date} – You felt: #{entry.mood}")
+        text_reply(pb, "You said: \"#{entry.text}\"")
+      end
+      text_reply(pb, "That's it! Feel free to interact with the menu more.")
+    end
+  end
+
+##############################################################################################
+# Regular Workflow Methods
+##############################################################################################
+
+  # Routine that asks user to rate their day and logs his grateful message
+  def begin_routine pb
+    id = pb.sender['id']
+    content = {
+      attachment: {
+        type: 'template',
+        payload: {
+          template_type: 'button',
+          text: "How did you feel today?",
+          buttons: [
+            {type: 'postback', title: 'Content', payload: ACTIONS[:mood_good]},
+            {type: 'postback', title: 'Okay', payload: ACTIONS[:mood_okay]},
+            {type: 'postback', title: 'Discontent', payload: ACTIONS[:mood_bad]}
+          ]
+        }
+      }
+    }
+    send_msg_first id, content
+  end
+
+  # Routine that asks user to rate their day and logs his grateful message
+  def handle_mood pb
+    case pb.payload
+    when ACTIONS[:mood_good]
+      text_reply(pb, "That's great :)")
+      text_reply(pb, "What's one thing about today that you can be happy about?")
+    when ACTIONS[:mood_okay]
+      text_reply(pb, "Glad that your day wasn't bad!")
+      text_reply(pb, "What's one thing about today that you can be happy about?")
+    when ACTIONS[:mood_bad]
+      text_reply(pb, "That's too bad.. I hope that tomorrow will be a happier day for you.")
+      text_reply(pb, "You can always find something to be grateful for – even during the worst moments!")
+      text_reply(pb, "What's one thing about today that you can be happy about?")
+    end
+  end
+
+  # Confirms user whether he wants to really save his previous message as a log
+  def handle_log msg
+    button_reply(msg, "Confirm your answer of \"#{@user_log}\"?",
+      [{type: 'postback', title: 'Yes', payload: ACTIONS[:submit_yes]},
+      {type: 'postback', title: 'No', payload: ACTIONS[:submit_no]}])
+  end
+
+  # Accepts user's gratefulness post and asks for confirmation through postback
+  def confirm_submit pb
+    text_reply(pb, "Thanks for interacting with me.")
+    text_reply(pb, "Please feel free to talk to me further as specified by the menu.
+     Else, hope to see you tomorrow!")
+  end
+
+  # After executing, returns to postback manager; user can type his/her answer again
+  def unconfirm_submit pb
+    text_reply(pb, "Retype your response, please.")
+  end
+
+  # Intro interaction
+  def introduction pb
+    text_reply(pb, "I'm Mind Fulfilled Bot, a Facebook chatbot
+       designed to try help you feel more content and grateful living your life.")
+    button_reply(pb,"Please tap 'Learn more' to learn more about how I work.",
+      [{type: 'postback', title: 'Learn more', payload: ACTIONS[:learn_more]}])
+  end
+
+  # Part of intro sequence
+  def learn_more pb
+    text_reply(pb, "I work by messaging you once per day at night to
+     reflect how you felt and to tell me one thing that you were grateful about that day.")
+    text_reply(pb, "Please click on the menu on the bottom of the screen to
+     see more options, such as why what I do can help you be happier.")
+    button_reply(pb,"If you are ready to proceed, please tap 'Begin my journey'.",
+      [{type: 'postback', title: 'Begin my journey', payload: ACTIONS[:begin_routine]}])
+  end
 end
