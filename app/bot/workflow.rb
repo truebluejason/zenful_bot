@@ -62,13 +62,13 @@ module Workflow
       text_reply(msg, "You don't have any entries on that date.
        However, you have entries on the following dates:")
       Entry.where(user_id: db_user.id).each do |entry|
-        text_reply(msg, "entry.date")
+        text_reply(msg, "#{entry.date}")
       end
       text_reply(msg, "Feel free to search for another date or interact with the menu.")
     else
       past_user_entries.each do |entry|
-        text_reply(pb, "Date: #{entry.date} – You felt: #{entry.mood}")
-        text_reply(pb, "You said: \"#{entry.text}\"")
+        text_reply(msg, "Date: #{entry.date} – You felt: #{entry.mood}")
+        text_reply(msg, "You said: \"#{entry.text}\"")
       end
       text_reply(msg, "That's it! Feel free to interact with the menu more.")
     end
@@ -93,10 +93,9 @@ module Workflow
 ##############################################################################################
 # Regular Workflow Methods
 ##############################################################################################
-
+=begin
   # Routine that asks user to rate their day and logs his grateful message
-  def begin_routine pb
-    id = pb.sender['id']
+  def begin_routine id
     content = {
       attachment: {
         type: 'template',
@@ -112,6 +111,15 @@ module Workflow
       }
     }
     send_msg_first id, content
+  end
+=end
+
+  # BETA TESTING method that asks user to rate their day and logs his grateful message
+  def begin_routine pb
+    button_reply(pb, "How did you feel today?",
+      [{type: 'postback', title: 'Content', payload: ACTIONS[:mood_good]},
+      {type: 'postback', title: 'Okay', payload: ACTIONS[:mood_okay]},
+      {type: 'postback', title: 'Discontent', payload: ACTIONS[:mood_bad]}])
   end
 
   # Routine that asks user to rate their day and logs his grateful message
@@ -132,7 +140,7 @@ module Workflow
 
   # Confirms user whether he wants to really save his previous message as a log
   def handle_log msg
-    button_reply(msg, "Confirm your answer of \"#{@user_log}\"?",
+    button_reply(msg, "Confirm your answer of \"#{msg.text}\"?",
       [{type: 'postback', title: 'Yes', payload: ACTIONS[:submit_yes]},
       {type: 'postback', title: 'No', payload: ACTIONS[:submit_no]}])
   end

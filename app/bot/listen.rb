@@ -16,6 +16,7 @@ require 'byebug'
 # Format: { `facebook_id`: { actions: [`action_1`, `action_2`, ...], saved: `value` } }, with menu actions first and other actions after
 # Storage for Temporarily Saving Incomplete Entries: { `facebook_id`: { date: `12/25/2017`, mood: `content`, text: `` } }
 temp_storage = {}
+byebug
 
 # Action collection
 ACTIONS = {
@@ -55,7 +56,7 @@ Bot.on :message do |message|
     when ACTIONS[:log]
       Workflow.handle_log message
       temp_storage[user_id][:text] = message.text
-      db_user.actions = MENU_ACTS
+      db_user.actions = MENU_ACTS + ",#{ACTIONS[:submit_yes]},#{ACTIONS[:submit_no]}"
       db_user.save
     else
       Workflow.redirect_message message
@@ -82,15 +83,18 @@ Bot.on :postback do |postback|
         db_user.actions = MENU_ACTS
         db_user.save
       when ACTIONS[:menu_act]
+        #Workflow.begin_routine user_id
         Workflow.begin_routine postback
-        db_user.actions = MENU_ACTS + ",#{ACTIONS[:begin_routine]}"
+        # Initialize the temporary storage entry for user_id
+        temp_storage[user_id] = { date: "not initialized", mood: "not initialized", text: "not initialized" }
+        db_user.actions = MENU_ACTS + ",#{ACTIONS[:mood_good]},#{ACTIONS[:mood_okay]},#{ACTIONS[:mood_bad]}"
         db_user.save
       when ACTIONS[:menu_show_specific]
-        Workflow.ask_for_formatted_date postback, db_user
+        Workflow.ask_for_formatted_date postback
         db_user.actions = MENU_ACTS + ",#{ACTIONS[:date]}"
         db_user.save
       when ACTIONS[:menu_show_all]
-        Workflow.show_all_logs postback
+        Workflow.show_all_logs postback, db_user
         db_user.actions = MENU_ACTS
         db_user.save
       when ACTIONS[:learn_more]
@@ -98,7 +102,8 @@ Bot.on :postback do |postback|
         db_user.actions = MENU_ACTS + ",#{ACTIONS[:begin_routine]}"
         db_user.save
       when ACTIONS[:begin_routine]
-        Workflow.begin_routine user_id
+        #Workflow.begin_routine user_id
+        Workflow.begin_routine postback
         # Initialize the temporary storage entry for user_id
         temp_storage[user_id] = { date: "not initialized", mood: "not initialized", text: "not initialized" }
         db_user.actions = MENU_ACTS + ",#{ACTIONS[:mood_good]},#{ACTIONS[:mood_okay]},#{ACTIONS[:mood_bad]}"
