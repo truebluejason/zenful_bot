@@ -3,7 +3,7 @@ include Facebook::Messenger
 require_relative "helpers"
 include Helpers
 
-require 'byebug'
+#require 'byebug'
 
 module Workflow
 
@@ -19,7 +19,7 @@ module Workflow
 
   # Tells the user to type the date message again
   def invalid_date msg
-    text_reply(msg, "The date you entered isn't properly formatted. Please try again or interact with the menu.")
+    text_reply(msg, "The date you entered isn't properly formatted. Please interact with the menu.")
   end
 
 ##############################################################################################
@@ -61,7 +61,7 @@ module Workflow
       Entry.where(user_id: db_user.id).each do |entry|
         text_reply(msg, "#{entry.date}")
       end
-      text_reply(msg, "Feel free to search for another date or interact with the menu.")
+      text_reply(msg, "Please interact with the menu.")
     else
       past_user_entries.each do |entry|
         text_reply(msg, "Date: #{entry.date} – You felt: #{entry.mood}")

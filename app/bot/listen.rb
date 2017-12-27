@@ -4,23 +4,14 @@ require_relative "setup"
 require_relative "workflow"
 include Workflow
 
-require 'byebug'
-
-# message.id          # => 'mid.1457764197618:41d102a3e1ae206a38'
-# message.sender      # => { 'id' => '1008372609250235' }
-# message.sent_at     # => 2016-04-22 21:30:36 +0200
-# message.text        # => 'Hello, bot!'
+#require 'byebug'
+#byebug
 
 
 
 # Storage for Temporarily Saving Incomplete Entries: { `facebook_id`: { date: `12/25/2017`, mood: `content`, text: `` } }
 temp_storage = {}
-#byebug
 
-# Server address
-SERVER_URL = "https://f4a3be0c.ngrok.io"
-# Path to image from app directory
-IMAGE_PATH = File.join(File.expand_path('.'), 'app', 'assets', 'images')
 # Action collection
 ACTIONS = {
   menu_reason: 'EXPLAIN',

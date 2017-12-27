@@ -1,7 +1,7 @@
 require 'facebook/messenger'
 include Facebook::Messenger
 
-require 'byebug'
+#require 'byebug'
 
 module Helpers
 

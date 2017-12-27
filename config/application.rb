@@ -17,6 +17,5 @@ module ZenfulBot
 
     config.paths.add File.join('app', 'bot'), glob: File.join('**', '*.rb')
     config.autoload_paths += Dir[Rails.root.join('app', 'bot', '*')]
-    config.web_console.whitelisted_ips = '::/0'
   end
 end

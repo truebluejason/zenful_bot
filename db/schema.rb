@@ -12,11 +12,14 @@
 
 ActiveRecord::Schema.define(version: 20171225184909) do
 
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "entries", force: :cascade do |t|
     t.string "date"
     t.string "mood"
     t.string "text"
-    t.integer "user_id"
+    t.bigint "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id", "created_at"], name: "index_entries_on_user_id_and_created_at"
@@ -31,4 +34,5 @@ ActiveRecord::Schema.define(version: 20171225184909) do
     t.index ["facebook_id"], name: "index_users_on_facebook_id"
   end
 
+  add_foreign_key "entries", "users"
 end
