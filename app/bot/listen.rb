@@ -13,11 +13,14 @@ require 'byebug'
 
 
 
-# Format: { `facebook_id`: { actions: [`action_1`, `action_2`, ...], saved: `value` } }, with menu actions first and other actions after
 # Storage for Temporarily Saving Incomplete Entries: { `facebook_id`: { date: `12/25/2017`, mood: `content`, text: `` } }
 temp_storage = {}
-byebug
+#byebug
 
+# Server address
+SERVER_URL = "https://f4a3be0c.ngrok.io"
+# Path to image from app directory
+IMAGE_PATH = File.join(File.expand_path('.'), 'app', 'assets', 'images')
 # Action collection
 ACTIONS = {
   menu_reason: 'EXPLAIN',
@@ -35,6 +38,7 @@ ACTIONS = {
   submit_yes: 'SUBMIT',
   submit_no: 'RETRY'
 }
+# Actions associated with Menu
 MENU_ACTS = "#{ACTIONS[:menu_reason]},#{ACTIONS[:menu_act]},#{ACTIONS[:menu_show_specific]},#{ACTIONS[:menu_show_all]}"
 
 # Sets up menu and get started button

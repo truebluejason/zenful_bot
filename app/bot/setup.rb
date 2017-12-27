@@ -25,16 +25,16 @@ class SetUp
             call_to_actions: [
               {
                   type: 'nested',
-                    title: 'Show me my past responses!',
+                    title: 'Show past entries!',
                     call_to_actions: [
                       {
                         type: 'postback',
-                        title: 'A specific response.',
+                        title: 'A specific entry.',
                         payload: ACTIONS[:menu_show_specific]
                       },
                       {
                         type: 'postback',
-                        title: 'All responses.',
+                        title: 'All entries.',
                         payload: ACTIONS[:menu_show_all]
                       }
                     ]
@@ -46,7 +46,7 @@ class SetUp
                 },
                 {
                     type: 'postback',
-                    title: "I'll tell you about today now.",
+                    title: "I'll create an entry now.",
                     payload: ACTIONS[:menu_act]
                 }
             ]

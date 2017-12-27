@@ -52,9 +52,4 @@ module Helpers
 			}
 		)
 	end
-
-	# Randomly chooses response to send from a pool
-	def random_response pool
-
-	end
 end
