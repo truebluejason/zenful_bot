@@ -1,24 +1,16 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Zenful Bot is a Facebook bot designed to help you have a positive outlook on life.
 
-Things you may want to cover:
+Sample Screenshots
+![pic1](https://github.com/truebluejason/zenful_bot/app/assets/images/pic1)
+![pic2](https://github.com/truebluejason/zenful_bot/app/assets/images/pic2)
+![pic3](https://github.com/truebluejason/zenful_bot/app/assets/images/pic3)
 
-* Ruby version
+How to use Zenful Bot
+1. Go on Facebook Messenger
+2. Look up Zenful Bot
+3. Press "Get Started" button
 
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+* Bot specific code is at app/bot directory
+* Please email jasonyoo0116@gmail.com if you have any questions! :)
