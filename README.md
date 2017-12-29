@@ -6,19 +6,19 @@
 
 *How to use Zenful Bot*
 
-> Go on Facebook Messenger
+> 1. Go on Facebook Messenger
 
-> Look up Zenful Bot
+> 2. Look up Zenful Bot
 
-> Press "Get Started" button
+> 3. Press "Get Started" button
 
 <br/>
 
-*Screenshots*
+**Screenshots**
 
-<image src="https://github.com/truebluejason/zenful_bot/blob/master/app/assets/images/pic1.png" width="400">
-<image src="https://github.com/truebluejason/zenful_bot/blob/master/app/assets/images/pic1.png" width="400">
-<image src="https://github.com/truebluejason/zenful_bot/blob/master/app/assets/images/pic1.png" width="400">
+<image src="https://github.com/truebluejason/zenful_bot/blob/master/app/assets/images/pic1.png" width="400"/> <image src="https://github.com/truebluejason/zenful_bot/blob/master/app/assets/images/pic2.png" width="400"/>
+<image src="https://github.com/truebluejason/zenful_bot/blob/master/app/assets/images/pic3.png" width="400"/> <image src="https://github.com/truebluejason/zenful_bot/blob/master/app/assets/images/pic4.png" width="400"/>
+
 
 <br/>
 <br/>
